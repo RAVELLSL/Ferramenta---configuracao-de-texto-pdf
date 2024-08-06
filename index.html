@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Formatação de Textos</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .main-title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            background: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        @media (max-width: 600px) {
+            .main-title {
+                font-size: 20px;
+            }
+
+            textarea {
+                font-size: 12px;
+                padding: 12px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-title">Plataforma de Formatação de Textos</h1>
+        <textarea id="textInput" rows="20" placeholder="Insira seu texto aqui..."></textarea>
+        <button onclick="saveAsPDF()">Salvar e Converter</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script>
+        function saveAsPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                unit: 'pt',
+                format: 'a4'
+            });
+
+            // Margens em pontos (1 cm = 28.35 pontos)
+            const margins = {
+                top: 2 * 28.35,
+                left: 3 * 28.35,
+                bottom: 2 * 28.35,
+                right: 2 * 28.35
+            };
+
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const contentWidth = pageWidth - margins.left - margins.right;
+
+            let text = document.getElementById('textInput').value;
+            text = text.replace(/[\\#*]/g, ''); // Remove caracteres indesejados
+
+            const lines = text.split('\n');
+            let y = margins.top;
+
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text(lines[0], pageWidth / 2, y, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            y += 20; // Ajuste para espaçamento entre título principal e texto
+
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].startsWith('- ')) {
+                    doc.setFont(undefined, 'bold');
+                    doc.text(lines[i].substring(2), margins.left, y, { align: 'left' });
+                    doc.setFont(undefined, 'normal');
+                } else {
+                    const splittedText = doc.splitTextToSize(lines[i], contentWidth);
+                    doc.text(splittedText, margins.left, y, { align: 'left' });
+                    y += splittedText.length * 12 * 1.5; // Ajuste para espaçamento entre linhas
+                }
+                if (y > pageHeight - margins.bottom) {
+                    doc.addPage();
+                    y = margins.top;
+                }
+            }
+
+            doc.save('documento_formatado.pdf');
+        }
+    </script>
+</body>
+</html>
