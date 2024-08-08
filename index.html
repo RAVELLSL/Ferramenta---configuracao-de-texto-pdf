@@ -102,9 +102,9 @@
             // Margens em pontos (1 cm = 28.35 pontos)
             const margins = {
                 top: 2 * 28.35,
-                left: 3 * 28.35,
+                left: 2 * 28.35,  // 2 cm da borda esquerda
                 bottom: 2 * 28.35,
-                right: 2 * 28.35
+                right: 2 * 28.35  // 2 cm da borda direita
             };
 
             const pageWidth = doc.internal.pageSize.getWidth();
@@ -119,21 +119,24 @@
 
             doc.setFontSize(14);
             doc.setFont(undefined, 'bold');
-            doc.text(lines[0], pageWidth / 2, y, { align: 'center' });
+            const titleLines = doc.splitTextToSize(lines[0], contentWidth);
+            doc.text(titleLines, pageWidth / 2, y, { align: 'center' });
+            y += titleLines.length * 14 + 10;
 
             doc.setFontSize(12);
             doc.setFont(undefined, 'normal');
-            y += 20; // Ajuste para espaçamento entre título principal e texto
 
             for (let i = 1; i < lines.length; i++) {
                 if (lines[i].startsWith('- ')) {
                     doc.setFont(undefined, 'bold');
-                    doc.text(lines[i].substring(2), margins.left, y, { align: 'left' });
+                    const itemLines = doc.splitTextToSize(lines[i].substring(2), contentWidth);
+                    doc.text(itemLines, margins.left, y, { align: 'left' });
                     doc.setFont(undefined, 'normal');
+                    y += itemLines.length * 12 * 1.5 + 10;
                 } else {
                     const splittedText = doc.splitTextToSize(lines[i], contentWidth);
                     doc.text(splittedText, margins.left, y, { align: 'left' });
-                    y += splittedText.length * 12 * 1.5; // Ajuste para espaçamento entre linhas
+                    y += splittedText.length * 12 * 1.5 + 10;
                 }
                 if (y > pageHeight - margins.bottom) {
                     doc.addPage();
